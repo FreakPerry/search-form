@@ -1,21 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchUsersQuery } from '../store/github/github.api';
+import { useLazyGetUserReposQuery, useSearchUsersQuery } from '../store/github/github.api';
 import { useDebounse } from '../hooks/debounce';
+import RepoCard from '../components/RepoCard';
 
 export function HomePage() {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState('freakperry');
   const debounced = useDebounse(search);
   const [dropdown, setDropdown] = useState(false);
   const { isLoading, isError, data } = useSearchUsersQuery(debounced, {
-    skip: debounced.length < 3
+    skip: debounced.length < 3,
+    refetchOnFocus: true
   });
+  const [fetchRepos, { isLoading: areReposLoading, data: repos }] = useLazyGetUserReposQuery();
 
   useEffect(() => {
     setDropdown(debounced.length > 3 && data?.length! > 0);
   }, [debounced, data]);
 
   const clickHandler = (username: string) => {
-    console.log(username);
+    fetchRepos(username);
+    setDropdown(false);
   };
 
   return (
@@ -45,6 +49,12 @@ export function HomePage() {
             ))}
           </ul>
         )}
+        <div className="container">
+          {areReposLoading && <p className="text-center">Repos are loading...</p>}
+          {repos?.map(repo => (
+            <RepoCard repo={repo} key={repo.id} />
+          ))}
+        </div>
       </div>
     </div>
   );
