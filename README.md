@@ -16,6 +16,3 @@ GitHub profile search tool, a first attempt at using new technologies TypeScript
 
 </div>
 
-## Links
-
-https://freakperry.github.io/mesto-react/
